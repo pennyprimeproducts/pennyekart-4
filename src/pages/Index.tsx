@@ -25,8 +25,9 @@ const Index = () => {
   const isCustomer = user && profile?.user_type === "customer";
 
   // Helper to convert products to row format
-  const toRowFormat = (items: { name: string; price: number; mrp: number; image_url: string | null }[]) =>
+  const toRowFormat = (items: { id?: string; name: string; price: number; mrp: number; image_url: string | null }[]) =>
     items.map(p => ({
+      id: (p as any).id,
       name: p.name,
       price: p.price,
       originalPrice: p.mrp > p.price ? p.mrp : undefined,

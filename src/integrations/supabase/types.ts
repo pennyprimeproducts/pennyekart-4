@@ -533,6 +533,7 @@ export type Database = {
           stock: number
           updated_at: string
           updated_by: string | null
+          video_url: string | null
         }
         Insert: {
           category?: string | null
@@ -553,6 +554,7 @@ export type Database = {
           stock?: number
           updated_at?: string
           updated_by?: string | null
+          video_url?: string | null
         }
         Update: {
           category?: string | null
@@ -573,6 +575,7 @@ export type Database = {
           stock?: number
           updated_at?: string
           updated_by?: string | null
+          video_url?: string | null
         }
         Relationships: []
       }
@@ -773,6 +776,7 @@ export type Database = {
           seller_id: string
           stock: number
           updated_at: string
+          video_url: string | null
         }
         Insert: {
           area_godown_id?: string | null
@@ -794,6 +798,7 @@ export type Database = {
           seller_id: string
           stock?: number
           updated_at?: string
+          video_url?: string | null
         }
         Update: {
           area_godown_id?: string | null
@@ -815,6 +820,7 @@ export type Database = {
           seller_id?: string
           stock?: number
           updated_at?: string
+          video_url?: string | null
         }
         Relationships: [
           {

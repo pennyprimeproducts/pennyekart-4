@@ -35,6 +35,7 @@ import SellingPartnerForgotPassword from "./pages/selling-partner/ForgotPassword
 import SellingPartnerDashboard from "./pages/selling-partner/Dashboard";
 import CustomerSignup from "./pages/customer/Signup";
 import CustomerLogin from "./pages/customer/Login";
+import ProductDetail from "./pages/customer/ProductDetail";
 
 const queryClient = new QueryClient();
 
@@ -79,7 +80,9 @@ const App = () => {
               } />
 
               {/* Customer */}
+              <Route path="/product/:id" element={<ProductDetail />} />
               <Route path="/customer/signup" element={<CustomerSignup />} />
+              <Route path="/customer/login" element={<CustomerLogin />} />
               <Route path="/customer/login" element={<CustomerLogin />} />
 
               {/* Selling Partner */}
