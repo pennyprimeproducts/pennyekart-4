@@ -19,10 +19,31 @@ const Cart = () => {
   const [paymentMethod, setPaymentMethod] = useState("cod");
   const [placingOrder, setPlacingOrder] = useState(false);
 
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount: number } | null>(null);
+  const [couponError, setCouponError] = useState("");
+  const [useWallet, setUseWallet] = useState(false);
+  const [walletBalance] = useState(0); // TODO: fetch from user wallet
+
   const totalMrp = items.reduce((s, i) => s + i.mrp * i.quantity, 0);
   const totalDiscount = totalMrp - totalPrice;
   const platformFee = items.length > 0 ? 7 : 0;
-  const finalAmount = totalPrice + platformFee;
+  const couponDiscount = appliedCoupon?.discount ?? 0;
+  const walletDeduction = useWallet ? Math.min(walletBalance, totalPrice + platformFee - couponDiscount) : 0;
+  const finalAmount = totalPrice + platformFee - couponDiscount - walletDeduction;
+
+  const handleApplyCoupon = () => {
+    setCouponError("");
+    if (!couponCode.trim()) return;
+    // TODO: validate coupon against backend
+    setCouponError("Invalid coupon code");
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode("");
+    setCouponError("");
+  };
 
   const handlePlaceOrder = () => {
     if (!user) {
@@ -156,6 +177,60 @@ const Cart = () => {
 
           {/* Right: Price Details */}
           <div className="w-full lg:w-80 shrink-0 space-y-4">
+            {/* Coupon Code */}
+            <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
+              <h2 className="mb-3 text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                Apply Coupon
+              </h2>
+              {appliedCoupon ? (
+                <div className="flex items-center justify-between rounded-md border border-secondary/30 bg-secondary/10 px-3 py-2">
+                  <div>
+                    <span className="text-sm font-semibold text-foreground">{appliedCoupon.code}</span>
+                    <p className="text-xs text-secondary">You save ₹{appliedCoupon.discount.toFixed(2)}</p>
+                  </div>
+                  <button onClick={handleRemoveCoupon} className="text-xs font-semibold uppercase text-destructive hover:underline">Remove</button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                    placeholder="Enter coupon code"
+                    className="flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                  <Button size="sm" variant="outline" onClick={handleApplyCoupon} disabled={!couponCode.trim()}>
+                    Apply
+                  </Button>
+                </div>
+              )}
+              {couponError && <p className="mt-1.5 text-xs text-destructive">{couponError}</p>}
+            </div>
+
+            {/* Wallet */}
+            <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Wallet</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">Balance: ₹{walletBalance.toFixed(2)}</p>
+                </div>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={useWallet}
+                    onChange={(e) => setUseWallet(e.target.checked)}
+                    disabled={walletBalance <= 0}
+                    className="h-4 w-4 rounded border-border text-primary accent-primary"
+                  />
+                  <span className="text-sm text-foreground">Use Wallet</span>
+                </label>
+              </div>
+              {useWallet && walletDeduction > 0 && (
+                <p className="mt-1.5 text-xs text-secondary">₹{walletDeduction.toFixed(2)} will be deducted from wallet</p>
+              )}
+            </div>
+
+            {/* Price Details */}
             <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
               <h2 className="mb-3 text-sm font-bold uppercase tracking-wider text-muted-foreground">
                 Price Details
@@ -181,6 +256,18 @@ const Cart = () => {
                   <span className="text-foreground">Delivery Charges</span>
                   <span className="font-medium text-secondary">Free</span>
                 </div>
+                {couponDiscount > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-foreground">Coupon Discount</span>
+                    <span className="font-medium text-secondary">− ₹{couponDiscount.toFixed(2)}</span>
+                  </div>
+                )}
+                {walletDeduction > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-foreground">Wallet</span>
+                    <span className="font-medium text-secondary">− ₹{walletDeduction.toFixed(2)}</span>
+                  </div>
+                )}
               </div>
 
               <Separator className="my-3" />
@@ -190,9 +277,9 @@ const Cart = () => {
                 <span className="text-foreground">₹{finalAmount.toFixed(2)}</span>
               </div>
 
-              {totalDiscount > 0 && (
+              {(totalDiscount + couponDiscount + walletDeduction) > 0 && (
                 <p className="mt-2 text-xs font-medium text-secondary">
-                  You will save ₹{totalDiscount.toFixed(2)} on this order
+                  You will save ₹{(totalDiscount + couponDiscount + walletDeduction).toFixed(2)} on this order
                 </p>
               )}
             </div>
